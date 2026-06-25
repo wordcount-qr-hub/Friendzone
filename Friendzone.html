@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FriendZone - Find Real Friends</title>
+<meta name="description" content="FriendZone - Apne sheher mein asli dost dhundho. Chat, call aur connect karo."/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<!-- Google AdSense: apna publisher ID neeche daalo -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script> -->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#7C3AED;--pl:#A78BFA;--pk:#EC4899;
+  --dark:#0F0A1E;--card:rgba(255,255,255,0.06);
+  --text:#F3F0FF;--muted:#A89DC7;--border:rgba(167,139,250,.18);
+  --green:#22c55e;--red:#ef4444;--gold:#f59e0b;
+}
+body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* BG */
+.bg{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse at 15% 20%,#3b0764 0%,transparent 50%),
+             radial-gradient(ellipse at 85% 80%,#4c0519 0%,transparent 50%),
+             var(--dark)}
+
+/* SCREENS */
+.screen{display:none;position:relative;z-index:1;min-height:100vh}
+.screen.active{display:flex}
+
+/* ═══ AUTH SCREEN ═══ */
+#s-auth{flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center}
+.auth-logo{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;
+  background:linear-gradient(90deg,var(--pl),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:.3rem}
+.auth-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:1.8rem;max-width:400px;width:100%;backdrop-filter:blur(16px)}
+.tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:rgba(0,0,0,.3);border-radius:10px;padding:.3rem}
+.tab{flex:1;padding:.6rem;border:none;background:none;color:var(--muted);
+  border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .2s}
+.tab.active{background:linear-gradient(135deg,var(--p),var(--pk));color:#fff}
+.inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);
+  border-radius:10px;padding:.8rem 1rem;color:var(--text);font-size:.9rem;
+  outline:none;transition:border-color .2s;margin-bottom:.75rem;font-family:inherit}
+.inp:focus{border-color:var(--pl)}
+.inp::placeholder{color:var(--muted)}
+.btn-main{width:100%;background:linear-gradient(135deg,var(--p),var(--pk));
+  color:#fff;border:none;border-radius:10px;padding:.85rem;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-main:hover{opacity:.88;transform:translateY(-1px)}
+.err{color:var(--red);font-size:.82rem;margin-bottom:.75rem;display:none}
+.age-note{font-size:.78rem;color:var(--muted);margin-top:.75rem}
+
+/* ═══ MAIN APP ═══ */
+#s-app{flex-direction:column}
+
+/* TOP NAV */
+.topnav{position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.25rem;
+  background:rgba(15,10,30,.9);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.1rem;
+  background:linear-gradient(90deg,var(--pl),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.avatar-sm{width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--p),var(--pk));
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;cursor:pointer}
+.notif-btn{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;position:relative}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;
+  background:var(--pk);border-radius:50%}
+
+/* CONTENT AREA */
+.content{flex:1;overflow-y:auto;padding-bottom:5rem}
+
+/* BOTTOM NAV */
+.botnav{position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;
+  background:rgba(15,10,30,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);padding:.5rem 0}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  padding:.4rem;cursor:pointer;transition:color .2s;color:var(--muted);
+  border:none;background:none;font-size:.65rem;font-weight:600}
+.bnav-item.active{color:var(--pl)}
+.bnav-icon{font-size:1.3rem}
+
+/* VIEWS */
+.view{display:none;padding:1.25rem}
+.view.active{display:block}
+
+/* ── DISCOVER ── */
+.section-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:1rem}
+.filter-row{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:1.25rem;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fchip{background:var(--card);border:1px solid var(--border);border-radius:999px;
+  padding:.35rem .9rem;font-size:.8rem;color:var(--muted);cursor:pointer;
+  white-space:nowrap;transition:all .2s;flex-shrink:0}
+.fchip.active,.fchip:hover{background:var(--p);color:#fff;border-color:var(--p)}
+
+.people-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.9rem}
+.person-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s}
+.person-card:hover{transform:translateY(-2px);border-color:var(--pl)}
+.pcard-top{height:120px;display:flex;align-items:center;justify-content:center;font-size:3rem;
+  background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(236,72,153,.2))}
+.pcard-body{padding:.75rem}
+.pcard-name{font-weight:700;font-size:.95rem;margin-bottom:.2rem}
+.pcard-info{font-size:.78rem;color:var(--muted);margin-bottom:.5rem}
+.pcard-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem}
+.tag{background:rgba(124,58,237,.2);color:var(--pl);font-size:.7rem;
+  padding:.2rem .5rem;border-radius:999px}
+.pcard-actions{display:flex;gap:.4rem}
+.btn-connect{flex:1;background:linear-gradient(135deg,var(--p),var(--pk));
+  color:#fff;border:none;border-radius:8px;padding:.45rem;
+  font-size:.78rem;font-weight:600;cursor:pointer}
+.btn-skip{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border);
+  border-radius:8px;padding:.45rem .7rem;font-size:.78rem;cursor:pointer}
+
+/* ── FRIENDS ── */
+.friend-item{display:flex;align-items:center;gap:.85rem;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:.85rem;margin-bottom:.75rem;cursor:pointer;transition:border-color .2s}
+.friend-item:hover{border-color:var(--pl)}
+.friend-avatar{width:46px;height:46px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.friend-info{flex:1}
+.friend-name{font-weight:600;font-size:.95rem}
+.friend-status{font-size:.78rem;color:var(--muted)}
+.friend-actions{display:flex;gap:.4rem}
+.btn-msg{background:linear-gradient(135deg,var(--p),var(--pk));color:#fff;
+  border:none;border-radius:8px;padding:.4rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer}
+.btn-call{background:rgba(34,197,94,.15);color:var(--green);
+  border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:.4rem .7rem;font-size:.78rem;cursor:pointer}
+
+/* ── CHAT ── */
+.chat-list-item{display:flex;align-items:center;gap:.85rem;
+  padding:.9rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s}
+.chat-list-item:hover{background:rgba(255,255,255,.03)}
+.chat-avatar{width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(236,72,153,.3))}
+.chat-info{flex:1}
+.chat-name{font-weight:600;font-size:.92rem}
+.chat-preview{font-size:.78rem;color:var(--muted);margin-top:.1rem}
+.chat-meta{text-align:right}
+.chat-time{font-size:.72rem;color:var(--muted)}
+.chat-badge{background:var(--pk);color:#fff;border-radius:999px;
+  font-size:.65rem;font-weight:700;padding:.15rem .45rem;margin-top:.2rem;display:inline-block}
+
+/* CHAT WINDOW */
+.chat-window{display:none;flex-direction:column;height:calc(100vh - 130px)}
+.chat-window.active{display:flex}
+.chat-header{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;
+  border-bottom:1px solid var(--border);background:rgba(15,10,30,.8)}
+.chat-back{background:none;border:none;color:var(--pl);font-size:1.2rem;cursor:pointer}
+.chat-hname{font-weight:700;font-size:.95rem}
+.chat-hstatus{font-size:.75rem;color:var(--green)}
+.chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.msg{max-width:75%;padding:.65rem .9rem;border-radius:14px;font-size:.88rem;line-height:1.5}
+.msg.out{align-self:flex-end;background:linear-gradient(135deg,var(--p),var(--pk));color:#fff;border-bottom-right-radius:4px}
+.msg.in{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg-time{font-size:.68rem;opacity:.7;margin-top:.2rem}
+.limit-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);
+  border-radius:12px;padding:.85rem;margin:.75rem;text-align:center}
+.limit-banner p{font-size:.82rem;color:var(--gold);margin-bottom:.5rem}
+.chat-input-row{display:flex;gap:.5rem;padding:.85rem 1.25rem;
+  border-top:1px solid var(--border);background:rgba(15,10,30,.9)}
+.chat-inp{flex:1;background:var(--card);border:1px solid var(--border);
+  border-radius:22px;padding:.65rem 1rem;color:var(--text);font-size:.88rem;
+  outline:none;font-family:inherit}
+.chat-inp:focus{border-color:var(--pl)}
+.send-btn{background:linear-gradient(135deg,var(--p),var(--pk));border:none;
+  border-radius:50%;width:40px;height:40px;color:#fff;font-size:1rem;cursor:pointer;flex-shrink:0}
+
+/* ── CALLS ── */
+.call-item{display:flex;align-items:center;gap:.85rem;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:.85rem;margin-bottom:.75rem}
+.call-icon-wrap{width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.call-icon-wrap.missed{background:rgba(239,68,68,.15)}
+.call-icon-wrap.incoming{background:rgba(34,197,94,.15)}
+.call-icon-wrap.outgoing{background:rgba(124,58,237,.15)}
+.call-info{flex:1}
+.call-name{font-weight:600;font-size:.92rem}
+.call-detail{font-size:.75rem;color:var(--muted);margin-top:.1rem}
+.btn-recall{background:rgba(34,197,94,.15);color:var(--green);
+  border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:.4rem .75rem;
+  font-size:.78rem;cursor:pointer}
+
+/* ── RECHARGE ── */
+.plan-card{background:var(--card);border:2px solid var(--border);border-radius:20px;
+  padding:1.4rem;margin-bottom:1rem;transition:border-color .2s,transform .2s;cursor:pointer}
+.plan-card:hover,.plan-card.popular{border-color:var(--p);transform:translateY(-2px)}
+.plan-badge{display:inline-block;background:linear-gradient(135deg,var(--p),var(--pk));
+  color:#fff;font-size:.7rem;font-weight:700;padding:.2rem .65rem;
+  border-radius:999px;margin-bottom:.6rem}
+.plan-name{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.3rem}
+.plan-price{font-size:2rem;font-weight:800;font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,var(--pl),var(--pk));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.plan-price span{font-size:.9rem;font-weight:400;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+.plan-features{margin-top:.85rem;display:flex;flex-direction:column;gap:.4rem}
+.plan-feat{font-size:.83rem;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+.plan-feat::before{content:"✓";color:var(--green);font-weight:700}
+.btn-buy{width:100%;margin-top:1rem;background:linear-gradient(135deg,var(--p),var(--pk));
+  color:#fff;border:none;border-radius:10px;padding:.8rem;
+  font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-buy:hover{opacity:.88}
+.upi-box{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:1.1rem;margin-top:1.25rem;text-align:center}
+.upi-box p{font-size:.85rem;color:var(--muted);margin-bottom:.5rem}
+.upi-id{font-size:1rem;font-weight:700;color:var(--pl);letter-spacing:.05em}
+
+/* ── PROFILE ── */
+.profile-hero{display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem;text-align:center;margin-bottom:1rem}
+.profile-avatar{width:80px;height:80px;border-radius:50%;font-size:2.5rem;
+  background:linear-gradient(135deg,var(--p),var(--pk));
+  display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;
+  border:3px solid var(--pl)}
+.profile-name{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.3rem}
+.profile-info{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+.plan-status{display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);
+  color:var(--gold);font-size:.78rem;font-weight:600;
+  padding:.3rem .85rem;border-radius:999px;margin-top:.65rem}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:.85rem;text-align:center}
+.stat-num{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.3rem;
+  background:linear-gradient(135deg,var(--pl),var(--pk));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.menu-item{display:flex;align-items:center;gap:.85rem;
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:.9rem 1rem;margin-bottom:.65rem;cursor:pointer;transition:border-color .2s}
+.menu-item:hover{border-color:var(--pl)}
+.menu-icon{font-size:1.2rem;width:32px;text-align:center}
+.menu-label{flex:1;font-size:.9rem;font-weight:500}
+.menu-arrow{color:var(--muted);font-size:.85rem}
+
+/* ── PAGES (About/Privacy/Contact) ── */
+.page-content{padding:1.5rem;max-width:680px;margin:0 auto}
+.page-content h2{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:1rem;
+  background:linear-gradient(135deg,var(--pl),var(--pk));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-content h3{font-size:1rem;font-weight:700;color:var(--pl);margin:1.2rem 0 .4rem}
+.page-content p{color:var(--muted);line-height:1.8;font-size:.9rem;margin-bottom:.75rem}
+.page-content ul{color:var(--muted);padding-left:1.2rem;line-height:2;font-size:.9rem}
+.contact-form{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+.contact-form input,.contact-form textarea{background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:.8rem 1rem;color:var(--text);font-size:.9rem;
+  outline:none;font-family:inherit;transition:border-color .2s}
+.contact-form input:focus,.contact-form textarea:focus{border-color:var(--pl)}
+.contact-form textarea{min-height:120px;resize:vertical}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  align-items:flex-end;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#1a1030;border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:1.75rem 1.5rem;
+  width:100%;max-width:480px;text-align:center}
+.modal h3{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.6rem}
+.modal p{color:var(--muted);font-size:.88rem;line-height:1.6;margin-bottom:1.25rem}
+.modal-btns{display:flex;gap:.65rem}
+.btn-outline{flex:1;background:none;border:1px solid var(--border);color:var(--text);
+  border-radius:10px;padding:.8rem;font-size:.9rem;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(40px);
+  background:linear-gradient(135deg,var(--p),var(--pk));
+  color:#fff;padding:.7rem 1.4rem;border-radius:12px;
+  font-size:.85rem;font-weight:600;z-index:300;
+  transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* CALL SCREEN */
+.call-screen{display:none;position:fixed;inset:0;z-index:400;
+  background:linear-gradient(135deg,#1a0530,#300520);
+  flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.call-screen.active{display:flex}
+.call-big-avatar{width:100px;height:100px;border-radius:50%;font-size:3rem;
+  background:linear-gradient(135deg,var(--p),var(--pk));
+  display:flex;align-items:center;justify-content:center;margin-bottom:1rem;
+  animation:callPulse 1.5s infinite}
+@keyframes callPulse{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.5)}50%{box-shadow:0 0 0 20px rgba(124,58,237,0)}}
+.call-name-big{font-family:'Poppins',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:.3rem}
+.call-status{color:var(--muted);font-size:.9rem;margin-bottom:3rem}
+.call-timer{font-size:1.2rem;font-weight:600;color:var(--pl);margin-bottom:2rem}
+.call-controls{display:flex;gap:1.5rem}
+.call-btn{width:60px;height:60px;border-radius:50%;border:none;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer}
+.call-btn.mute{background:rgba(255,255,255,.1);color:#fff}
+.call-btn.speaker{background:rgba(255,255,255,.1);color:#fff}
+.call-btn.end{background:var(--red);color:#fff}
+
+@media(max-width:380px){.people-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<!-- ═══════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════ -->
+<div class="screen active" id="s-auth">
+  <div style="position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">🤝</div>
+    <div class="auth-logo">FriendZone</div>
+    <div class="auth-sub">Asli dosti, asli log</div>
+
+    <div class="auth-box">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <input class="inp" type="email" id="l-email" placeholder="Email address"/>
+        <input class="inp" type="password" id="l-pass" placeholder="Password"/>
+        <div class="err" id="l-err">Email ya password galat hai!</div>
+        <button class="btn-main" onclick="doLogin()">Login Karo</button>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="tab-signup" style="display:none">
+        <input class="inp" type="text" id="r-name" placeholder="Poora naam"/>
+        <input class="inp" type="date" id="r-dob" placeholder="Date of Birth"/>
+        <input class="inp" type="text" id="r-city" placeholder="Sheher (jaise: Mumbai, Delhi)"/>
+        <input class="inp" type="text" id="r-interests" placeholder="Interests (jaise: Music, Gaming, Travel)"/>
+        <input class="inp" type="email" id="r-email" placeholder="Email address"/>
+        <input class="inp" type="password" id="r-pass" placeholder="Password (min 6 characters)"/>
+        <div class="err" id="r-err">Koi error aaya!</div>
+        <button class="btn-main" onclick="doSignup()">Account Banao</button>
+        <p class="age-note">⚠️ Sirf 18+ log hi register kar sakte hain</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     MAIN APP
+═══════════════════════════════ -->
+<div class="screen" id="s-app">
+  <!-- Top Nav -->
+  <div class="topnav">
+    <div class="nav-logo">🤝 FriendZone</div>
+    <div class="nav-right">
+      <button class="notif-btn" onclick="toast('Koi nayi notification nahi hai')">🔔<span class="notif-dot"></span></button>
+      <div class="avatar-sm" onclick="goView('profile')">😊</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- DISCOVER VIEW -->
+    <div class="view active" id="v-discover">
+      <div class="section-title">🔍 Log Dhundo</div>
+      <div class="filter-row">
+        <div class="fchip active" onclick="filterChip(this)">Sabhi</div>
+        <div class="fchip" onclick="filterChip(this)">Music 🎵</div>
+        <div class="fchip" onclick="filterChip(this)">Gaming 🎮</div>
+        <div class="fchip" onclick="filterChip(this)">Travel ✈️</div>
+        <div class="fchip" onclick="filterChip(this)">Sports ⚽</div>
+        <div class="fchip" onclick="filterChip(this)">Movies 🎬</div>
+        <div class="fchip" onclick="filterChip(this)">Food 🍕</div>
+      </div>
+      <div class="people-grid" id="people-grid"></div>
+    </div>
+
+    <!-- FRIENDS VIEW -->
+    <div class="view" id="v-friends">
+      <div class="section-title">❤️ Mere Dost</div>
+      <div id="friends-list"></div>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div class="view" id="v-chat">
+      <!-- Chat list -->
+      <div id="chat-list-view">
+        <div class="section-title">💬 Messages</div>
+        <div id="chat-list"></div>
+      </div>
+      <!-- Chat window -->
+      <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+          <button class="chat-back" onclick="closeChat()">←</button>
+          <div class="chat-avatar" id="cw-avatar" style="font-size:1.3rem;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(236,72,153,.3));display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="chat-hname" id="cw-name"></div>
+            <div class="chat-hstatus">● Online</div>
+          </div>
+          <button onclick="startCall()" style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:.35rem .65rem;font-size:.85rem;cursor:pointer">📞</button>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="limit-banner" id="msg-limit-banner" style="display:none">
+          <p>💬 Aaj ke free messages khatam ho gaye! Unlimited ke liye recharge karo.</p>
+          <button class="btn-main" style="width:auto;padding:.5rem 1.2rem;font-size:.82rem" onclick="goView('recharge')">⚡ Recharge Karo</button>
+        </div>
+        <div class="chat-input-row" id="chat-input-row">
+          <input class="chat-inp" id="msg-inp" placeholder="Message likhо..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+          <button class="send-btn" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALLS VIEW -->
+    <div class="view" id="v-calls">
+      <div class="section-title">📞 Calls</div>
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:.85rem;margin-bottom:1.25rem;font-size:.82rem;color:var(--gold)">
+        ⚡ Free plan: 5 min/din · <span style="cursor:pointer;text-decoration:underline" onclick="goView('recharge')">Upgrade karo →</span>
+      </div>
+      <div id="calls-list"></div>
+    </div>
+
+    <!-- RECHARGE VIEW -->
+    <div class="view" id="v-recharge">
+      <div class="section-title">💳 Recharge Plans</div>
+      <div id="current-plan-box" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:.85rem;margin-bottom:1.25rem;font-size:.85rem;color:var(--green)">
+        ✅ Current Plan: <span id="cur-plan-name">Free</span>
+      </div>
+
+      <!-- Free -->
+      <div class="plan-card">
+        <div class="plan-name">Free Plan</div>
+        <div class="plan-price">₹0<span>/hamesha</span></div>
+        <div class="plan-features">
+          <div class="plan-feat">10 messages per din</div>
+          <div class="plan-feat">5 minute call per din</div>
+          <div class="plan-feat">People discover kar sakte ho</div>
+          <div class="plan-feat">Friend request bhej sakte ho</div>
+        </div>
+      </div>
+
+      <!-- Basic -->
+      <div class="plan-card" onclick="buyPlan('Basic','49')">
+        <div class="plan-badge">🔥 Popular</div>
+        <div class="plan-name">Basic Plan</div>
+        <div class="plan-price">₹49<span>/month</span></div>
+        <div class="plan-features">
+          <div class="plan-feat">Unlimited messages</div>
+          <div class="plan-feat">30 minute call per din</div>
+          <div class="plan-feat">Profile boost (zyada log dekhenge)</div>
+          <div class="plan-feat">Priority friend matching</div>
+        </div>
+        <button class="btn-buy">₹49 mein Kharido</button>
+      </div>
+
+      <!-- Premium -->
+      <div class="plan-card popular" onclick="buyPlan('Premium','99')">
+        <div class="plan-badge">⭐ Best Value</div>
+        <div class="plan-name">Premium Plan</div>
+        <div class="plan-price">₹99<span>/month</span></div>
+        <div class="plan-features">
+          <div class="plan-feat">Unlimited messages</div>
+          <div class="plan-feat">Unlimited calls</div>
+          <div class="plan-feat">Super profile boost</div>
+          <div class="plan-feat">Advanced filters (age, city)</div>
+          <div class="plan-feat">Blue tick verified badge</div>
+          <div class="plan-feat">Priority customer support</div>
+        </div>
+        <button class="btn-buy">₹99 mein Kharido</button>
+      </div>
+
+      <!-- UPI -->
+      <div class="upi-box">
+        <p>💳 Payment UPI se karo:</p>
+        <div class="upi-id">yourname@upi</div>
+        <p style="margin-top:.5rem;font-size:.78rem">Payment ke baad screenshot WhatsApp karo — 1 ghante mein activate ho jayega</p>
+      </div>
+    </div>
+
+    <!-- PROFILE VIEW -->
+    <div class="view" id="v-profile">
+      <div class="profile-hero">
+        <div class="profile-avatar">😊</div>
+        <div class="profile-name" id="p-name">User</div>
+        <div class="profile-info" id="p-info">Mumbai · 23 saal</div>
+        <div class="plan-status">⚡ <span id="p-plan">Free Plan</span></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-num">12</div><div class="stat-lbl">Dost</div></div>
+        <div class="stat-box"><div class="stat-num">48</div><div class="stat-lbl">Requests</div></div>
+        <div class="stat-box"><div class="stat-num">3.2K</div><div class="stat-lbl">Views</div></div>
+      </div>
+
+      <div class="menu-item" onclick="goView('recharge')"><span class="menu-icon">💳</span><span class="menu-label">Recharge / Plan</span><span class="menu-arrow">›</span></div>
+      <div class="menu-item" onclick="showSubPage('about')"><span class="menu-icon">ℹ️</span><span class="menu-label">About FriendZone</span><span class="menu-arrow">›</span></div>
+      <div class="menu-item" onclick="showSubPage('privacy')"><span class="menu-icon">🔒</span><span class="menu-label">Privacy Policy</span><span class="menu-arrow">›</span></div>
+      <div class="menu-item" onclick="showSubPage('contact')"><span class="menu-icon">📩</span><span class="menu-label">Contact Us</span><span class="menu-arrow">›</span></div>
+      <div class="menu-item" onclick="doLogout()" style="border-color:rgba(239,68,68,.2)"><span class="menu-icon">🚪</span><span class="menu-label" style="color:var(--red)">Logout</span><span class="menu-arrow">›</span></div>
+    </div>
+
+    <!-- ABOUT SUB PAGE -->
+    <div class="view" id="v-about">
+      <button onclick="goView('profile')" style="background:none;border:none;color:var(--pl);font-size:.9rem;cursor:pointer;margin-bottom:1rem">← Wapas jao</button>
+      <div class="page-content">
+        <h2>About FriendZone 🤝</h2>
+        <p>FriendZone ek safe aur fun friendship platform hai jahan aap apne sheher mein, apni pasand ke log dhundh sakte ho.</p>
+        <h3>Hamari Story</h3>
+        <p>Aaj ke time mein log socially connected dikhte hain, lekin asli dosti bahut rare ho gayi hai. FriendZone isi problem ko solve karne ke liye bana hai.</p>
+        <h3>Features</h3>
+        <ul>
+          <li>💬 Chat system (free + paid)</li>
+          <li>📞 Voice calling</li>
+          <li>🔍 City & interest based discovery</li>
+          <li>❤️ Friend matching</li>
+          <li>🔒 18+ age verified platform</li>
+          <li>⚡ Affordable plans ₹49/₹99</li>
+        </ul>
+        <h3>Version</h3>
+        <p>FriendZone Web v1.0 · © 2025</p>
+      </div>
+    </div>
+
+    <!-- PRIVACY SUB PAGE -->
+    <div class="view" id="v-privacy">
+      <button onclick="goView('profile')" style="background:none;border:none;color:var(--pl);font-size:.9rem;cursor:pointer;margin-bottom:1rem">← Wapas jao</button>
+      <div class="page-content">
+        <h2>Privacy Policy 🔒</h2>
+        <p><strong style="color:var(--text)">Last updated:</strong> January 2025</p>
+        <h3>1. Data Jo Hum Collect Karte Hain</h3>
+        <ul>
+          <li>Naam, age, city, interests (signup ke waqt)</li>
+          <li>Email address</li>
+          <li>App usage data</li>
+        </ul>
+        <h3>2. Data Ka Use</h3>
+        <ul>
+          <li>App features provide karne ke liye</li>
+          <li>Account security ke liye</li>
+          <li>App improve karne ke liye</li>
+        </ul>
+        <h3>3. Data Sharing</h3>
+        <p>Hum aapka personal data kisi third party ko SELL nahi karte. Google AdSense ads ke liye cookies use karta hai.</p>
+        <h3>4. Age Policy</h3>
+        <p>Yeh platform sirf 18+ users ke liye hai. 18 se kam umra ke log register nahi kar sakte.</p>
+        <h3>5. Contact</h3>
+        <p>Privacy questions ke liye: <span style="color:var(--pl)">hello@friendzone.app</span></p>
+      </div>
+    </div>
+
+    <!-- CONTACT SUB PAGE -->
+    <div class="view" id="v-contact">
+      <button onclick="goView('profile')" style="background:none;border:none;color:var(--pl);font-size:.9rem;cursor:pointer;margin-bottom:1rem">← Wapas jao</button>
+      <div class="page-content">
+        <h2>Contact Us 📩</h2>
+        <p>Koi sawaal, suggestion ya feedback ho — zaroor batao!</p>
+        <div class="contact-form">
+          <input type="text" id="c-name" placeholder="Aapka naam" class="inp"/>
+          <input type="email" id="c-email" placeholder="Email" class="inp"/>
+          <input type="text" id="c-sub" placeholder="Subject" class="inp"/>
+          <textarea id="c-msg" placeholder="Message..." class="inp" style="min-height:110px;resize:vertical"></textarea>
+          <button class="btn-main" onclick="sendContact()">📨 Bhejo</button>
+        </div>
+        <h3 style="margin-top:1.5rem">Direct Contact</h3>
+        <p>📧 hello@friendzone.app</p>
+        <p>📱 WhatsApp: +91 99999 99999</p>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+
+  <!-- Bottom Nav -->
+  <div class="botnav">
+    <button class="bnav-item active" id="bn-discover" onclick="goView('discover')"><span class="bnav-icon">🔍</span>Dhundo</button>
+    <button class="bnav-item" id="bn-friends" onclick="goView('friends')"><span class="bnav-icon">❤️</span>Dost</button>
+    <button class="bnav-item" id="bn-chat" onclick="goView('chat')"><span class="bnav-icon">💬</span>Chat</button>
+    <button class="bnav-item" id="bn-calls" onclick="goView('calls')"><span class="bnav-icon">📞</span>Calls</button>
+    <button class="bnav-item" id="bn-recharge" onclick="goView('recharge')"><span class="bnav-icon">⚡</span>Recharge</button>
+  </div>
+</div><!-- end s-app -->
+
+<!-- ═══ MODALS ═══ -->
+<!-- Age block modal -->
+<div class="modal-overlay" id="modal-age">
+  <div class="modal">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">🚫</div>
+    <h3>Umra Kam Hai</h3>
+    <p>FriendZone sirf <strong>18 saal ya usse zyada</strong> umra ke logon ke liye hai. Aapki date of birth ke hisaab se aap abhi register nahi kar sakte.</p>
+    <button class="btn-main" onclick="closeModal('modal-age')">Theek Hai</button>
+  </div>
+</div>
+
+<!-- Buy plan modal -->
+<div class="modal-overlay" id="modal-buy">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:.5rem">💳</div>
+    <h3 id="modal-plan-title">Plan Kharido</h3>
+    <p id="modal-plan-desc">UPI ID pe payment karo aur screenshot WhatsApp karo. 1 ghante mein activate ho jayega.</p>
+    <div style="background:rgba(124,58,237,.15);border:1px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:1rem">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">UPI ID</div>
+      <div style="font-weight:700;color:var(--pl);font-size:1rem">yourname@upi</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-outline" onclick="closeModal('modal-buy')">Baad Mein</button>
+      <button class="btn-main" style="flex:1" onclick="confirmPlan()">✅ Done, Screenshot Bhejna</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALL SCREEN -->
+<div class="call-screen" id="call-screen">
+  <div class="call-big-avatar" id="call-avatar">😊</div>
+  <div class="call-name-big" id="call-name">Rahul</div>
+  <div class="call-status" id="call-status">Connecting...</div>
+  <div class="call-timer" id="call-timer" style="display:none">00:00</div>
+  <div class="call-controls">
+    <button class="call-btn mute" id="mute-btn" onclick="toggleMute()">🎙️</button>
+    <button class="call-btn end" onclick="endCall()">📵</button>
+    <button class="call-btn speaker" onclick="toast('Speaker toggle')">🔊</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ═══ DATA ═══
+const PEOPLE = [
+  {id:1,name:"Priya Sharma",age:22,city:"Mumbai",emoji:"👩",interests:["Music","Travel"],bio:"Coffee lover ☕"},
+  {id:2,name:"Rahul Singh",age:25,city:"Delhi",emoji:"👨",interests:["Gaming","Sports"],bio:"Cricket fan 🏏"},
+  {id:3,name:"Anjali Verma",age:21,city:"Pune",emoji:"👩‍🦱",interests:["Movies","Food"],bio:"Foodie 🍕"},
+  {id:4,name:"Arjun Nair",age:28,city:"Bangalore",emoji:"👨‍💻",interests:["Gaming","Music"],bio:"Developer 💻"},
+  {id:5,name:"Sneha Patel",age:23,city:"Ahmedabad",emoji:"👩‍🎨",interests:["Travel","Food"],bio:"Artist 🎨"},
+  {id:6,name:"Vikram Das",age:26,city:"Kolkata",emoji:"👨‍🎤",interests:["Music","Movies"],bio:"Singer 🎤"},
+  {id:7,name:"Meera Iyer",age:24,city:"Chennai",emoji:"👩‍⚕️",interests:["Sports","Travel"],bio:"Doctor 🏥"},
+  {id:8,name:"Karan Mehta",age:27,city:"Mumbai",emoji:"👨‍🍳",interests:["Food","Music"],bio:"Chef 👨‍🍳"},
+];
+
+const FRIENDS = [
+  {id:2,name:"Rahul Singh",emoji:"👨",status:"Online",city:"Delhi"},
+  {id:3,name:"Anjali Verma",emoji:"👩‍🦱",status:"1 ghante pehle",city:"Pune"},
+  {id:5,name:"Sneha Patel",emoji:"👩‍🎨",status:"Online",city:"Ahmedabad"},
+];
+
+const CHATS = [
+  {id:2,name:"Rahul Singh",emoji:"👨",last:"Kal milte hain!",time:"2m",unread:2},
+  {id:3,name:"Anjali Verma",emoji:"👩‍🦱",last:"Haha 😂",time:"1h",unread:0},
+  {id:5,name:"Sneha Patel",emoji:"👩‍🎨",last:"Nice pic!",time:"3h",unread:1},
+];
+
+const CALL_LOG = [
+  {name:"Rahul Singh",emoji:"👨",type:"incoming",detail:"Aaj · 2 min",id:2},
+  {name:"Anjali Verma",emoji:"👩‍🦱",type:"missed",detail:"Kal · Missed",id:3},
+  {name:"Sneha Patel",emoji:"👩‍🎨",type:"outgoing",detail:"2 din pehle · 5 min",id:5},
+];
+
+// App state
+let currentUser = null;
+let msgCount = 0;
+const MSG_LIMIT = 10;
+let planActive = 'Free';
+let pendingPlan = null;
+let callTimer = null;
+let callSecs = 0;
+let muted = false;
+let activeChatId = null;
+
+const chatHistory = {
+  2:[{out:false,text:"Hey! Kaise ho?",time:"10:30"},{out:true,text:"Main theek hun, tum batao!",time:"10:31"}],
+  3:[{out:true,text:"Hi Anjali!",time:"Yesterday"},{out:false,text:"Haha 😂",time:"Yesterday"}],
+  5:[{out:false,text:"Nice pic!",time:"3h ago"}],
+};
+
+// ═══ AUTH ═══
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-login').style.display = t==='login'?'block':'none';
+  document.getElementById('tab-signup').style.display = t==='signup'?'block':'none';
+}
+
+function calcAge(dob){
+  const d=new Date(dob), now=new Date();
+  let age=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
+  return age;
+}
+
+function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  const err=document.getElementById('l-err');
+  if(!email||!pass){err.style.display='block';err.textContent='Dono fields bharo!';return;}
+  // Check stored users
+  const users=JSON.parse(localStorage.getItem('fz_users')||'[]');
+  const user=users.find(u=>u.email===email&&u.pass===pass);
+  if(!user){err.style.display='block';err.textContent='Email ya password galat hai!';return;}
+  err.style.display='none';
+  currentUser=user;
+  launchApp();
+}
+
+function doSignup(){
+  const name=document.getElementById('r-name').value.trim();
+  const dob=document.getElementById('r-dob').value;
+  const city=document.getElementById('r-city').value.trim();
+  const interests=document.getElementById('r-interests').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const err=document.getElementById('r-err');
+
+  if(!name||!dob||!city||!email||!pass){err.style.display='block';err.textContent='Sabhi fields bharo!';return;}
+  if(pass.length<6){err.style.display='block';err.textContent='Password kam se kam 6 characters ka hona chahiye!';return;}
+
+  const age=calcAge(dob);
+  if(age<18){
+    err.style.display='none';
+    document.getElementById('modal-age').classList.add('active');
+    return;
+  }
+
+  const users=JSON.parse(localStorage.getItem('fz_users')||'[]');
+  if(users.find(u=>u.email===email)){err.style.display='block';err.textContent='Yeh email pehle se registered hai!';return;}
+
+  const user={name,dob,age,city,interests,email,pass,plan:'Free',joined:new Date().toISOString()};
+  users.push(user);
+  localStorage.setItem('fz_users',JSON.stringify(users));
+  currentUser=user;
+  err.style.display='none';
+  launchApp();
+}
+
+function launchApp(){
+  document.getElementById('s-auth').classList.remove('active');
+  document.getElementById('s-app').classList.add('active');
+  // Set profile info
+  document.getElementById('p-name').textContent=currentUser.name;
+  document.getElementById('p-info').textContent=currentUser.city+' · '+currentUser.age+' saal';
+  planActive=currentUser.plan||'Free';
+  document.getElementById('p-plan').textContent=planActive+' Plan';
+  document.getElementById('cur-plan-name').textContent=planActive;
+  renderPeople(); renderFriends(); renderChats(); renderCalls();
+  toast('Welcome, '+currentUser.name+'! 🎉');
+}
+
+function doLogout(){
+  currentUser=null; msgCount=0;
+  document.getElementById('s-app').classList.remove('active');
+  document.getElementById('s-auth').classList.add('active');
+  goView('discover');
+  toast('Logout ho gaye!');
+}
+
+// ═══ VIEWS ═══
+const VIEWS=['discover','friends','chat','calls','recharge','profile','about','privacy','contact'];
+function goView(v){
+  VIEWS.forEach(x=>{
+    const el=document.getElementById('v-'+x);
+    if(el) el.classList.remove('active');
+    const bn=document.getElementById('bn-'+x);
+    if(bn) bn.classList.remove('active');
+  });
+  const el=document.getElementById('v-'+v);
+  if(el) el.classList.add('active');
+  const bn=document.getElementById('bn-'+v);
+  if(bn) bn.classList.add('active');
+  // Close chat window if switching away
+  if(v!=='chat') closeChat();
+}
+function showSubPage(p){goView(p);}
+
+// ═══ DISCOVER ═══
+function renderPeople(){
+  const grid=document.getElementById('people-grid');
+  grid.innerHTML=PEOPLE.map(p=>`
+    <div class="person-card">
+      <div class="pcard-top">${p.emoji}</div>
+      <div class="pcard-body">
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-info">${p.city} · ${p.age} saal</div>
+        <div class="pcard-tags">${p.interests.map(i=>`<span class="tag">${i}</span>`).join('')}</div>
+        <div class="pcard-actions">
+          <button class="btn-connect" onclick="connectPerson(${p.id},'${p.name}')">+ Connect</button>
+          <button class="btn-skip" onclick="toast('Skip kar diya!')">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function filterChip(el){
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  toast('Filter: '+el.textContent);
+}
+function connectPerson(id,name){toast('Request bheji '+name+' ko! 🤝');}
+
+// ═══ FRIENDS ═══
+function renderFriends(){
+  document.getElementById('friends-list').innerHTML=FRIENDS.map(f=>`
+    <div class="friend-item">
+      <div class="friend-avatar" style="background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(236,72,153,.3))">${f.emoji}</div>
+      <div class="friend-info">
+        <div class="friend-name">${f.name}</div>
+        <div class="friend-status">${f.status} · ${f.city}</div>
+      </div>
+      <div class="friend-actions">
+        <button class="btn-msg" onclick="openChat(${f.id},'${f.name}','${f.emoji}')">💬</button>
+        <button class="btn-call" onclick="startCallWith('${f.name}','${f.emoji}')">📞</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══ CHAT ═══
+function renderChats(){
+  document.getElementById('chat-list').innerHTML=CHATS.map(c=>`
+    <div class="chat-list-item" onclick="openChat(${c.id},'${c.name}','${c.emoji}')">
+      <div class="chat-avatar">${c.emoji}</div>
+      <div class="chat-info">
+        <div class="chat-name">${c.name}</div>
+        <div class="chat-preview">${c.last}</div>
+      </div>
+      <div class="chat-meta">
+        <div class="chat-time">${c.time}</div>
+        ${c.unread?`<div class="chat-badge">${c.unread}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function openChat(id,name,emoji){
+  activeChatId=id;
+  goView('chat');
+  document.getElementById('chat-list-view').style.display='none';
+  const cw=document.getElementById('chat-window');
+  cw.classList.add('active');
+  document.getElementById('cw-name').textContent=name;
+  document.getElementById('cw-avatar').textContent=emoji;
+  renderMessages(id);
+  checkMsgLimit();
+}
+
+function closeChat(){
+  activeChatId=null;
+  const cw=document.getElementById('chat-window');
+  cw.classList.remove('active');
+  document.getElementById('chat-list-view').style.display='block';
+}
+
+function renderMessages(id){
+  const msgs=chatHistory[id]||[];
+  document.getElementById('chat-msgs').innerHTML=msgs.map(m=>`
+    <div class="msg ${m.out?'out':'in'}">${m.text}<div class="msg-time">${m.time}</div></div>`).join('');
+  const el=document.getElementById('chat-msgs');
+  el.scrollTop=el.scrollHeight;
+}
+
+function checkMsgLimit(){
+  const limited=planActive==='Free'&&msgCount>=MSG_LIMIT;
+  document.getElementById('msg-limit-banner').style.display=limited?'block':'none';
+  document.getElementById('chat-input-row').style.display=limited?'none':'flex';
+}
+
+function sendMsg(){
+  const inp=document.getElementById('msg-inp');
+  const text=inp.value.trim();
+  if(!text) return;
+  if(planActive==='Free'&&msgCount>=MSG_LIMIT){checkMsgLimit();return;}
+  if(!chatHistory[activeChatId]) chatHistory[activeChatId]=[];
+  chatHistory[activeChatId].push({out:true,text,time:'Abhi'});
+  msgCount++;
+  inp.value='';
+  renderMessages(activeChatId);
+  checkMsgLimit();
+  // Auto reply
+  setTimeout(()=>{
+    const replies=["Haha 😄","Bilkul!","Sahi kaha!","Acha acha!","😊","Theek hai!"];
+    chatHistory[activeChatId].push({out:false,text:replies[Math.floor(Math.random()*replies.length)],time:'Abhi'});
+    renderMessages(activeChatId);
+  },1200);
+}
+
+// ═══ CALLS ═══
+function renderCalls(){
+  const icons={missed:'❌',incoming:'📲',outgoing:'📤'};
+  const colors={missed:'missed',incoming:'incoming',outgoing:'outgoing'};
+  document.getElementById('calls-list').innerHTML=CALL_LOG.map(c=>`
+    <div class="call-item">
+      <div class="call-icon-wrap ${colors[c.type]}">${icons[c.type]}</div>
+      <div style="font-size:1.4rem">${c.emoji}</div>
+      <div class="call-info">
+        <div class="call-name">${c.name}</div>
+        <div class="call-detail">${c.type==='missed'?'<span style="color:var(--red)">Missed</span>':c.type==='incoming'?'<span style="color:var(--green)">Incoming</span>':'<span style="color:var(--pl)">Outgoing</span>'} · ${c.detail}</div>
+      </div>
+      <button class="btn-recall" onclick="startCallWith('${c.name}','${c.emoji}')">📞</button>
+    </div>`).join('');
+}
+
+function startCall(){
+  const name=document.getElementById('cw-name').textContent;
+  const emoji=document.getElementById('cw-avatar').textContent;
+  startCallWith(name,emoji);
+}
+
+function startCallWith(name,emoji){
+  if(planActive==='Free'){
+    toast('⚠️ Free plan: 5 min/din. Upgrade karo unlimited ke liye!');
+  }
+  document.getElementById('call-name').textContent=name;
+  document.getElementById('call-avatar').textContent=emoji;
+  document.getElementById('call-status').textContent='Connecting...';
+  document.getElementById('call-timer').style.display='none';
+  document.getElementById('call-screen').classList.add('active');
+  setTimeout(()=>{
+    document.getElementById('call-status').textContent='Connected 🟢';
+    document.getElementById('call-timer').style.display='block';
+    callSecs=0;
+    clearInterval(callTimer);
+    callTimer=setInterval(()=>{
+      callSecs++;
+      const m=String(Math.floor(callSecs/60)).padStart(2,'0');
+      const s=String(callSecs%60).padStart(2,'0');
+      document.getElementById('call-timer').textContent=m+':'+s;
+      if(planActive==='Free'&&callSecs>=300){endCall();toast('Free plan: 5 min limit khatam!');}
+    },1000);
+  },1500);
+}
+
+function endCall(){
+  clearInterval(callTimer);
+  document.getElementById('call-screen').classList.remove('active');
+}
+
+function toggleMute(){
+  muted=!muted;
+  document.getElementById('mute-btn').textContent=muted?'🔇':'🎙️';
+  toast(muted?'Muted':'Unmuted');
+}
+
+// ═══ RECHARGE ═══
+function buyPlan(name,price){
+  pendingPlan={name,price};
+  document.getElementById('modal-plan-title').textContent=name+' Plan — ₹'+price+'/month';
+  document.getElementById('modal-plan-desc').textContent='UPI ID pe ₹'+price+' bhejo aur payment ka screenshot WhatsApp karo. 1 ghante mein activate ho jayega.';
+  document.getElementById('modal-buy').classList.add('active');
+}
+
+function confirmPlan(){
+  if(pendingPlan){
+    planActive=pendingPlan.name;
+    document.getElementById('p-plan').textContent=planActive+' Plan';
+    document.getElementById('cur-plan-name').textContent=planActive;
+    msgCount=0;
+    closeModal('modal-buy');
+    toast('✅ '+planActive+' Plan activated! Enjoy karo 🎉');
+    pendingPlan=null;
+  }
+}
+
+// ═══ UTILS ═══
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+
+function sendContact(){
+  const n=document.getElementById('c-name').value;
+  const e=document.getElementById('c-email').value;
+  const m=document.getElementById('c-msg').value;
+  if(!n||!e||!m){toast('⚠️ Sabhi fields bharo!');return;}
+  document.getElementById('c-name').value='';
+  document.getElementById('c-email').value='';
+  document.getElementById('c-sub').value='';
+  document.getElementById('c-msg').value='';
+  toast('📨 Message bhej diya! Jald reply karenge 🙏');
+}
+
+function toast(msg){
+  const el=document.getElementById('toast-el');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('active');});
+});
+</script>
+</body>
+</html>
